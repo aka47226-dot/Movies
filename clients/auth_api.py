@@ -1,4 +1,4 @@
-from constants import LOGIN, PASSWORD, BASE_URL, AUTH_URL, LOGIN_ENDPOINT
+from constants.constants import LOGIN, PASSWORD, AUTH_URL, LOGIN_ENDPOINT, REGISTER_ENDPOINT
 from custom_requester.custom_requester import CustomRequester
 
 
@@ -7,10 +7,18 @@ class AuthApi(CustomRequester):
     def __init__(self, session):
         super().__init__(session=session, base_url=AUTH_URL)
 
-    def authenticate(self):
+    def register_user(self, user_data: dict, expected_status=201):
+        return self.send_request(
+            method="POST",
+            endpoint=REGISTER_ENDPOINT,
+            data=user_data,
+            expected_status=expected_status
+        )
+
+    def authenticate(self, creds=None):
         login_data = {
-            "email": LOGIN,
-            "password": PASSWORD
+            "email": creds[0] if creds else LOGIN,
+            "password": creds[1] if creds else PASSWORD
         }
 
         response = self.login_user(login_data).json()

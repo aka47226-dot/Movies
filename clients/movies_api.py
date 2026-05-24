@@ -1,4 +1,4 @@
-from constants import BASE_URL, LOGIN_ENDPOINT, LOGIN, PASSWORD, MOVIES_ENDPOINT
+from constants.constants import BASE_URL, MOVIES_ENDPOINT
 from custom_requester.custom_requester import CustomRequester
 
 class MoviesAPI(CustomRequester):
