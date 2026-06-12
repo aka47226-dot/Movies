@@ -2,7 +2,6 @@ from sqlalchemy.orm import Session
 from db_models.user import UserDBModel
 from db_models.movies import MovieDBModel
 
-
 class DBHelper:
     def __init__(self, db_session: Session):
         self.db_session = db_session
@@ -44,11 +43,3 @@ class DBHelper:
             if obj:
                 self.db_session.delete(obj)
         self.db_session.commit()
-
-
-'''
-Пример хелпера для movies
-def get_movie_by_id(self, movie_id: str):
-    """Получает фильм по ID"""
-    return self.db_session.query(MovieDBModel).filter(MovieDBModel.id == movie_id).first()
-'''

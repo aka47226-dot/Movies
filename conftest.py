@@ -39,9 +39,11 @@ def custom_movie():
         }
     return _make_movie
 
-# conftest.py
 @pytest.fixture()
 def rand_movie():
+    """
+        Фикстура для создания рандомного фильма.
+    """
     def _make():
         return {
             "name": faker.name(),
