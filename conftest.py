@@ -8,6 +8,7 @@ from constants.constants import BASE_URL
 from constants.roles import Roles
 from custom_requester.custom_requester import CustomRequester
 from db_requester.db_client import get_db_session
+from models.movie import MovieData
 from utils.db_helper import DBHelper
 from entities.user import User
 from models.base_models import TestUser
@@ -40,21 +41,16 @@ def custom_movie():
     return _make_movie
 
 @pytest.fixture()
-def rand_movie():
-    """
-        Фикстура для создания рандомного фильма.
-    """
-    def _make():
-        return {
-            "name": faker.name(),
-            "imageUrl": faker.url(),
-            "price": faker.random_int(100, 500),
-            "description": faker.sentence(),
-            "location": "SPB",
-            "published": True,
-            "genreId": faker.random_int(1, 7)
-        }
-    return _make
+def rand_movie() -> MovieData:
+    return MovieData(
+        name=DataGenerator.generate_random_name(),
+        imageUrl=faker.url(),
+        price=DataGenerator.generate_random_int(500),
+        description=faker.sentence(),
+        location="SPB",
+        published=True,
+        genreId=DataGenerator.generate_random_int(7)
+    )
 
 @pytest.fixture(scope="session")
 def requester():

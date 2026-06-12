@@ -94,21 +94,21 @@ class TestMovies:
             api_manager.auth_api.authenticate()
 
         with allure.step("Создаём фильм с рандомными данными"):
-            movie = rand_movie()
-            response = api_manager.movies_api.post_movies(movie)
+            movie = rand_movie
+            response = api_manager.movies_api.post_movies(movie.model_dump())
 
         with allure.step("Проверяем поля фильма в ответе на POST"):
             data = response.json()
-            assert data["name"] == movie["name"]
-            assert data["price"] == movie["price"]
-            assert data["description"] == movie["description"]
+            assert data["name"] == movie.name
+            assert data["price"] == movie.price
+            assert data["description"] == movie.description
 
         with allure.step("Получаем фильм по id и проверяем данные"):
             response = api_manager.movies_api.get_movie_with_id(data["id"])
             data = response.json()
-            assert data["name"] == movie["name"]
-            assert data["price"] == movie["price"]
-            assert data["description"] == movie["description"]
+            assert data["name"] == movie.name
+            assert data["price"] == movie.price
+            assert data["description"] == movie.description
 
     # ================================================================= PATCH /movies/{id}
 
@@ -128,17 +128,17 @@ class TestMovies:
             api_manager.auth_api.authenticate()
 
         with allure.step("Создаём фильм"):
-            response = api_manager.movies_api.post_movies(rand_movie())
+            response = api_manager.movies_api.post_movies(rand_movie.model_dump())
             data = response.json()
             film_id = data["id"]
 
         with allure.step("Обновляем фильм новыми рандомными данными"):
-            rand_movie = rand_movie()
-            response = api_manager.movies_api.patch_movie_with_id(film_id, rand_movie)
+            rand_movie = rand_movie
+            response = api_manager.movies_api.patch_movie_with_id(film_id, rand_movie.model_dump())
 
         with allure.step("Проверяем id и обновлённое name"):
             assert response.json()["id"] == film_id
-            assert response.json()["name"] == rand_movie["name"]
+            assert response.json()["name"] == rand_movie.name
 
     @allure.story("Обновление фильма")
     @allure.title("Тест частичного обновления — изменение описания фильма")
@@ -156,7 +156,7 @@ class TestMovies:
             api_manager.auth_api.authenticate()
 
         with allure.step("Создаём фильм"):
-            response = api_manager.movies_api.post_movies(rand_movie())
+            response = api_manager.movies_api.post_movies(rand_movie.model_dump())
             data = response.json()
             film_id = data["id"]
 
@@ -186,7 +186,7 @@ class TestMovies:
             api_manager.auth_api.authenticate()
 
         with allure.step("Создаём фильм"):
-            response = api_manager.movies_api.post_movies(rand_movie())
+            response = api_manager.movies_api.post_movies(rand_movie.model_dump())
             film_id = response.json().get("id")
 
         with allure.step("Удаляем фильм"):
@@ -270,7 +270,7 @@ class TestMovies:
             api_manager.auth_api.authenticate()
 
         with allure.step("Создаём фильм"):
-            response = api_manager.movies_api.post_movies(rand_movie())
+            response = api_manager.movies_api.post_movies(rand_movie.model_dump())
             film_id = response.json().get("id")
 
         with allure.step("Удаляем фильм"):
@@ -349,7 +349,7 @@ class TestMovies:
             api_manager.auth_api.authenticate()
 
         with allure.step("Создаём фильм"):
-            response = api_manager.movies_api.post_movies(rand_movie())
+            response = api_manager.movies_api.post_movies(rand_movie.model_dump())
             data = response.json()
             film_id = data["id"]
 
@@ -392,7 +392,7 @@ class TestMovies:
             api_manager.auth_api.authenticate()
 
         with allure.step("Создаём фильм"):
-            response = api_manager.movies_api.post_movies(rand_movie())
+            response = api_manager.movies_api.post_movies(rand_movie.model_dump())
             film_id = response.json().get("id")
 
         with allure.step("Удаляем фильм"):
@@ -419,7 +419,7 @@ class TestMovies:
             api_manager.auth_api.authenticate(common_user.creds)
 
         with allure.step("Пытаемся создать фильм"):
-            response = api_manager.movies_api.post_movies(rand_movie(), expected_status=403)
+            response = api_manager.movies_api.post_movies(rand_movie.model_dump(), expected_status=403)
 
         with allure.step("Проверяем ошибку доступа 403 Forbidden resource"):
             assert response.json()["message"] == "Forbidden resource"
@@ -485,7 +485,7 @@ class TestMovies:
             api_manager.auth_api.authenticate()
 
         with allure.step("Создаём фильм"):
-            response = api_manager.movies_api.post_movies(rand_movie())
+            response = api_manager.movies_api.post_movies(rand_movie.model_dump())
             film_id = response.json().get("id")
 
         with allure.step("Авторизуемся под тестируемым пользователем"):
