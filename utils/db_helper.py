@@ -37,6 +37,14 @@ class DBHelper:
         self.db_session.delete(user)
         self.db_session.commit()
 
+    def create_test_movie(self, movie_data: dict) -> MovieDBModel:
+        """Создает тестовый фильм"""
+        movie = MovieDBModel(**movie_data)
+        self.db_session.add(movie)
+        self.db_session.commit()
+        self.db_session.refresh(movie)
+        return movie
+
     def cleanup_test_data(self, objects_to_delete: list):
         """Очищает тестовые данные"""
         for obj in objects_to_delete:

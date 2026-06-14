@@ -1,5 +1,5 @@
 # movies.py
-from sqlalchemy import Column, String, Boolean, DateTime, Float
+from sqlalchemy import Column, String, Boolean, DateTime, Float, Integer
 from sqlalchemy.orm import declarative_base
 from typing import Dict, Any
 
@@ -9,7 +9,7 @@ Base = declarative_base()
 class MovieDBModel(Base):
     __tablename__ = 'movies'
 
-    id = Column(String, primary_key=True)        # text в БД
+    id = Column(Integer, primary_key=True, autoincrement=True)        # text в БД
     name = Column(String)                         # text в БД
     price = Column(Float)                         # numeric в БД
     description = Column(String)                  # text в БД

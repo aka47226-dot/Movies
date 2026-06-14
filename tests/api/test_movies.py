@@ -1,10 +1,14 @@
+import datetime
+import uuid
 from venv import logger
 
 import allure
 import pytest
+from faker import Faker
 
-from conftest import admin_user, common_user, test_user
+from conftest import admin_user, common_user, test_user, faker
 from models.user import User
+from utils.data_generator import DataGenerator
 
 
 @allure.epic("Тестирование фильмов")
@@ -43,38 +47,69 @@ class TestMovies:
     @allure.description("""
     Тест проверяет, что все возвращённые фильмы соответствуют переданным фильтрам.
     Шаги:
-    1. Выполнить GET /movies с параметрами фильтрации (maxPrice=100, MSK, genreId=1).
-    2. Проверить, что список фильмов не пуст.
-    3. Проверить каждый фильм на соответствие заданным фильтрам.
+    1. Создать фильм в БД с заданными параметрами.
+    2. Выполнить GET /movies с параметрами фильтрации, соответствующими созданному фильму.
+    3. Проверить, что список фильмов не пуст.
+    4. Проверить каждый фильм на соответствие фильтрам.
+    5. Очистить тестовые данные.
     """)
     @allure.severity(allure.severity_level.NORMAL)
-    def test_get_movies_check_filter(self, api_manager, admin_user):
-        with allure.step("Выполняем GET /movies с параметрами фильтрации"):
-            response = api_manager.movies_api.get_movies(
-                pageSize=10,
-                page=1,
-                minPrice=1,
-                maxPrice=100,
-                locations="MSK",
-                published="true",
-                genreId=1,
-                createdAt="desc"
-            )
+    def test_get_movies_check_filter(self, api_manager, admin_user, db_helper):
+        price = DataGenerator.generate_random_int(500)
+        location = "MSK"
+        genre_id = str(DataGenerator.generate_random_int(7))
 
-        with allure.step("Проверяем, что список фильмов не пуст"):
-            movies = response.json()["movies"]
-            assert len(movies) > 0, "Список фильмов пуст"
+        db_movie_data = {
+            "name": faker.name(),
+            "image_url": faker.url(),
+            "price": price,
+            "description": faker.sentence(),
+            "location": location,
+            "published": True,
+            "genre_id": genre_id,
+            "rating": 0.0,
+            "created_at": datetime.datetime.now()
+        }
 
-        with allure.step("Проверяем каждый фильм на соответствие фильтрам"):
-            for movie in movies:
-                assert movie["price"] <= 100, \
-                    f"Фильм {movie['id']} имеет цену {movie['price']}, ожидалось <= 100"
-                assert movie["location"] == "MSK", \
-                    f"Фильм {movie['id']} имеет локацию {movie['location']}, ожидалось MSK"
-                assert movie["published"] is True, \
-                    f"Фильм {movie['id']} не опубликован"
-                assert movie["genreId"] == 1, \
-                    f"Фильм {movie['id']} имеет genreId {movie['genreId']}, ожидалось 1"
+        with allure.step("Создаём фильм напрямую в БД"):
+            movie_in_db = db_helper.create_test_movie(db_movie_data)
+
+        try:
+            with allure.step("Выполняем GET /movies с параметрами созданного фильма"):
+                response = api_manager.movies_api.get_movies(
+                    pageSize=10,
+                    page=1,
+                    minPrice=price - 1,
+                    maxPrice=price,
+                    locations=location,
+                    published="true",
+                    genreId=genre_id,
+                    createdAt="desc"
+                )
+
+            with allure.step("Проверяем, что список фильмов не пуст"):
+                movies = response.json()["movies"]
+                assert len(movies) > 0, "Список фильмов пуст"
+
+            with allure.step("Проверяем каждый фильм на соответствие фильтрам"):
+                for movie in movies:
+                    assert movie["price"] == price, \
+                        f"Фильм {movie['id']} имеет цену {movie['price']}, ожидалось {price}"
+                    assert movie["location"] == location, \
+                        f"Фильм {movie['id']} имеет локацию {movie['location']}, ожидалось {location}"
+                    assert movie["published"] is True, \
+                        f"Фильм {movie['id']} не опубликован"
+                    assert movie["genreId"] == int(genre_id), \
+                        f"Фильм {movie['id']} имеет genreId {movie['genreId']}, ожидалось {genre_id}"
+
+            with allure.step("Проверяем, что созданный фильм присутствует в ответе"):
+                movie_ids = [m["id"] for m in movies]
+                assert movie_in_db.id in movie_ids, \
+                    f"Созданный фильм {movie_in_db.id} не найден в ответе"
+
+        finally:
+            with allure.step("Удаляем тестовые данные из БД"):
+                db_helper.cleanup_test_data([movie_in_db])
 
     # ================================================================= POST /movies
 
